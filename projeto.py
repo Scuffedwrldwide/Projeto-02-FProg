@@ -256,9 +256,9 @@ def cria_campo(c, l):
 def cria_copia_campo(m):
     """ Retorna uma copia profunda do minefield (m)"""
     copy = dict()
-    #if eh_campo(m):
-    for col in range(65, ord(obtem_ultima_coluna(m))): copy.update({chr(col): m[chr(col)]})
-    return copy
+    if eh_campo(m):
+        for col in range(65, ord(obtem_ultima_coluna(m))): copy.update({chr(col): m[chr(col)]})
+        return copy
     
 def obtem_ultima_coluna(m): return list(m.keys())[-1]
 
@@ -270,4 +270,71 @@ def obtem_parcela(m, c):
     m (TAD) -- Campo de Minas
     c (TAD) -- Coordenadas
     """
-    return (m[obtem_coluna(c)])[obtem_linha[c]]
+    return (m[obtem_coluna(c)])[obtem_linha(c)-1]
+
+def obtem_coordenadas(m, s):
+                                                                        #
+    """ 
+    Devolve um tuplo contendo todas as parcelas correspondentes ao 
+    estado 's', ordenadas da esquerda para a direita e de cima a baixo
+    segundo a sua posição no campo 'm'
+    
+    m (TAD) -- Campo de Minas
+    s (str) -- Estado selecionado
+    """
+
+    coords = list()
+    for c in list(m.keys()):
+        for p in m[c]:
+            if s == parcela_para_str(p): coords.append(p)
+    return tuple(coords)
+
+def obtem_numero_minas_vizinhas(m, c):
+    """
+    Devolve o número de parcelas vizinhas à coordenada que escondem se
+    verificam minadas
+    
+    """
+    if not eh_coordenada_campo(m, c): raise TypeError ### idk man ###
+    count = 0
+    for coord in obtem_coordenadas_vizinhas(c):
+        if eh_parcela_minada(obtem_parcela(m, coord)): count += 1
+    return count
+
+def eh_campo(arg):
+    def keys(arg):
+        for k in arg.keys():
+            if not isinstance(k, str) or ord('A') > ord(k) or ord('Z') < ord(k): return False
+        return True
+    def values(arg):
+        for k in arg.keys():
+            for p in k:
+                if not eh_parcela(p): return False
+        return True
+    return isinstance(arg, dict) and  0 < len(arg) <= 27 and keys(arg) and values(arg)
+
+def eh_coordenada_campo(m, c):
+    return eh_campo and eh_coordenada(c)\
+        and ord(obtem_coluna(c)) <= ord(obtem_ultima_coluna(m))\
+        and obtem_linha(c) <= obtem_ultima_coluna(m)
+
+def campos_iguais(m1, m2): return eh_campo(m1) and eh_campo(m2) and m1 == m2
+
+def campo_para_str(m):
+    def line_str(m):
+        num = lambda x: '0'+str(x) if x < 10 else str(x)
+        linestr = ''
+        for line in range(1, obtem_ultima_linha(m)+1):
+            p = ''
+            for col in list(m.keys()):
+                p += parcela_para_str(obtem_parcela(m,cria_coordenada(col, line)))
+            linestr += num(line)+'|'+p+'|\n'
+        return linestr
+
+    def header(m):
+        cols = '   '
+        for i in list(m.keys()): cols += i
+        return cols
+
+    separator = '  +' + '-'*(ord(obtem_ultima_coluna(m))-64) + '+'
+    return header(m) + '\n' + separator + '\n' + line_str(m) + separator
