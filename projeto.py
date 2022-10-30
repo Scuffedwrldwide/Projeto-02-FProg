@@ -55,9 +55,9 @@ def gera_numero_aleatorio(g, n):
     n (int)      -- Limite superior do intervalo
     return (int) -- Número aleatório
     """
-    if not eh_gerador(g) or not isinstance(n, int) or n < 1: raise ValueError ### HUH?? ###
-    g[1] = atualiza_estado(g)
-    return 1 + g[1]%n
+    if not eh_gerador(g) or not isinstance(n, int) or n <= 1: raise ValueError ### HUH?? ###
+    atualiza_estado(g)
+    return 1 + obtem_estado(g)%n
 
 def gera_carater_aleatorio(g, c):
     """
@@ -307,7 +307,7 @@ def obtem_numero_minas_vizinhas(m, c):
     if not eh_coordenada_campo(m, c): raise TypeError ### idk man ###
     count = 0
     for coord in obtem_coordenadas_vizinhas(c):
-        if eh_coordenada_campo(m,c) and eh_parcela_minada(obtem_parcela(m, coord)): count += 1
+        if eh_coordenada_campo(m, coord) and eh_parcela_minada(obtem_parcela(m, coord)): count += 1
     return count
 
 def eh_campo(arg):
@@ -317,13 +317,13 @@ def eh_campo(arg):
         return True
     def values(arg):
         for k in arg.keys():
-            for p in k:
+            for p in arg[k]:
                 if not eh_parcela(p): return False
         return True
     return isinstance(arg, dict) and  0 < len(arg) <= 27 and keys(arg) and values(arg)
 
 def eh_coordenada_campo(m, c):
-    return eh_campo and eh_coordenada(c)\
+    return eh_campo(m) and eh_coordenada(c)\
         and ord(obtem_coluna(c)) <= ord(obtem_ultima_coluna(m))\
         and obtem_linha(c) <= obtem_ultima_linha(m)
 
@@ -369,7 +369,7 @@ def coloca_minas(m, c, g, n):
     g (TAD) -- Gerador
     n (int) -- Numero de parcelas a minar
     """
-    exclzone = list(obtem_coordenadas_vizinhas(c)) +[c,]
+    exclzone = list(obtem_coordenadas_vizinhas(c)) #+[c,]
     while n > 0:
         target = cria_coordenada(gera_carater_aleatorio(g,obtem_ultima_coluna(m)), gera_numero_aleatorio(g,obtem_ultima_linha(m)))
         if target not in exclzone:
@@ -383,14 +383,22 @@ def limpa_campo(m, c):
     Limpa a parcela na coordenada c e todas as vizinhas,
     devlove o campo
     """
-    
-    (m[obtem_coluna(c)])[obtem_linha(c)-1] = limpa_parcela(obtem_parcela(m,c))
-    for v in obtem_coordenadas_vizinhas(c):
-        if eh_coordenada_campo(m, v): p = obtem_parcela(m, v)
-        if eh_coordenada_campo(m, v) and not eh_parcela_minada(p) and eh_parcela_tapada(p):
-            m = limpa_campo(m,v)
-
+    limpa_parcela(obtem_parcela(m,c))
+    if eh_coordenada_campo(m,c) and obtem_numero_minas_vizinhas(m, c) == 0:
+        for v in obtem_coordenadas_vizinhas(c):
+            if eh_coordenada_campo(m, v): 
+                p = obtem_parcela(m, v)
+                if not eh_parcela_minada(p) and eh_parcela_tapada(p):
+                    m = limpa_campo(m,v)
     return m
+
+
+
+    
+
+    
+
+    
 
 
 ##################
@@ -472,7 +480,7 @@ def minas(c, l, n, d, s):
     
     state = 1 # gamestate, 1 enquanto jogavél, 0 se terminado
     def game_display():
-        print('   [Bandeiras'+str(len(obtem_coordenadas(m, 'marcadas')))+'/'+str(n)+']')
+        print('   [Bandeiras '+str(len(obtem_coordenadas(m, 'marcadas')))+'/'+str(n)+']')
         print(campo_para_str(m))
     while state == 1:
         game_display()
@@ -487,5 +495,6 @@ def minas(c, l, n, d, s):
             print('VITORIA!!!')
             return True
 
+#print(eh_coordenada_campo(cria_campo('X',5), cria_coordenada('X', 5)))
 
-minas('Z', 5, 6, 32, 2)
+minas('Z', 5, 10, 32, 15)
