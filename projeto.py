@@ -116,7 +116,8 @@ def coordenada_para_str(c):
 
 def str_para_coordenada(s):
     """Devolve uma coordenada definida pela string dada como argumento"""
-    if len(s) == 3: return cria_coordenada(s[0],int(s[1:]))
+    if len(s) == 3 and s[1] == '0': return cria_coordenada(s[0],int(s[2]))
+    elif len(s) == 3: return cria_coordenada(s[0],int(s[1:]))
 
 def obtem_coordenadas_vizinhas(c):
                                                                         #
@@ -306,7 +307,7 @@ def obtem_numero_minas_vizinhas(m, c):
     if not eh_coordenada_campo(m, c): raise TypeError ### idk man ###
     count = 0
     for coord in obtem_coordenadas_vizinhas(c):
-        if aux_in_field(m,c) and eh_parcela_minada(obtem_parcela(m, coord)): count += 1
+        if eh_coordenada_campo(m,c) and eh_parcela_minada(obtem_parcela(m, coord)): count += 1
     return count
 
 def eh_campo(arg):
@@ -328,15 +329,11 @@ def eh_coordenada_campo(m, c):
 
 def campos_iguais(m1, m2): return eh_campo(m1) and eh_campo(m2) and m1 == m2
 
-def aux_in_field(m, c):
-    return (obtem_coluna(c) <= obtem_ultima_coluna(m) and obtem_linha(c) <= obtem_ultima_linha(m))
-
-
 def campo_para_str(m):
     def mine_counter(m, c):
         count = 0
         for v in obtem_coordenadas_vizinhas(c):
-            if aux_in_field(m, v) and eh_parcela_minada(obtem_parcela(m, v)):
+            if eh_coordenada_campo(m, v) and eh_parcela_minada(obtem_parcela(m, v)):
                 count += 1
         if count > 0: return str(count)
         return ' '
@@ -384,13 +381,13 @@ def coloca_minas(m, c, g, n):
 def limpa_campo(m, c):
     """
     Limpa a parcela na coordenada c e todas as vizinhas,
-    devlove a parcela indicada
+    devlove o campo
     """
     
     (m[obtem_coluna(c)])[obtem_linha(c)-1] = limpa_parcela(obtem_parcela(m,c))
     for v in obtem_coordenadas_vizinhas(c):
-        if aux_in_field(m, v): p = obtem_parcela(m, v)
-        if aux_in_field(m, v) and not eh_parcela_minada(p) and eh_parcela_tapada(p):
+        if eh_coordenada_campo(m, v): p = obtem_parcela(m, v)
+        if eh_coordenada_campo(m, v) and not eh_parcela_minada(p) and eh_parcela_tapada(p):
             m = limpa_campo(m,v)
 
     return m
@@ -427,8 +424,15 @@ def turno_jogador(m):
     move = input('Escolha uma ação, [L]impar ou [M]arcar:')
     while move not in ['L', 'M']: move = input('Escolha uma ação, [L]impar ou [M]arcar:')
 
-    target = str_para_coordenada(input('Escolha uma coordenada:'))
-    while not eh_coordenada(target): target = str_para_coordenada(input('Escolha uma coordenada:'))
+    cinput = input('Escolha uma coordenada:')
+    if  not isinstance(cinput, str) or len(cinput) != 3 or\
+        ord(cinput[0]) < ord('A') or ord(cinput[0]) > ord('Z') or \
+        not isinstance(eval(cinput[1]), int) or not isinstance(eval(cinput[2]), int) \
+        or int(cinput[1]) == int(cinput[2]) == 0: cinput = input('Escolha uma coordenada:')
+    target = str_para_coordenada(cinput)
+
+    while not eh_coordenada(target) or not eh_coordenada_campo(m, target): 
+        target = str_para_coordenada(input('Escolha uma coordenada:'))
 
     p = obtem_parcela(m, target)
 
