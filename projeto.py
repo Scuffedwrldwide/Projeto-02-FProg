@@ -116,7 +116,7 @@ def coordenada_para_str(c):
 
 def str_para_coordenada(s):
     """Devolve uma coordenada definida pela string dada como argumento"""
-    if len() == 3: return cria_coordenada(s[0],eval(s[1:]))
+    if len(s) == 3: return cria_coordenada(s[0],int(s[1:]))
 
 def obtem_coordenadas_vizinhas(c):
                                                                         #
@@ -168,8 +168,11 @@ def cria_copia_parcela(p):
 
 def limpa_parcela(p):
     """ Atualiza o estado da parcela para 'limpa' ('?') """
-    if eh_parcela(p): 
+    if eh_parcela(p) and not eh_parcela_minada(p): 
         p.update({'state': '?'})
+        return p
+    elif eh_parcela(p) and eh_parcela_minada(p): 
+        p.update({'state': 'X'})
         return p
     raise ValueError ### WHICH?? ###
 
@@ -285,8 +288,13 @@ def obtem_coordenadas(m, s):
 
     coords = list()
     for c in list(m.keys()):
-        for p in m[c]:
-            if s == parcela_para_str(p): coords.append(p)
+        for l in range(0, len(m[c])):
+            p = m[c][l]
+            if  (s == 'minadas' and eh_parcela_minada(p)) or\
+                (s == 'limpas' and eh_parcela_limpa(p)) or\
+                (s == 'tapadas' and eh_parcela_tapada(p)) or\
+                (s == 'marcadas' and eh_parcela_marcada(p)):
+                    coords.append(cria_coordenada(c,l+1))
     return tuple(coords)
 
 def obtem_numero_minas_vizinhas(m, c):
@@ -298,7 +306,7 @@ def obtem_numero_minas_vizinhas(m, c):
     if not eh_coordenada_campo(m, c): raise TypeError ### idk man ###
     count = 0
     for coord in obtem_coordenadas_vizinhas(c):
-        if eh_parcela_minada(obtem_parcela(m, coord)): count += 1
+        if aux_in_field(m,c) and eh_parcela_minada(obtem_parcela(m, coord)): count += 1
     return count
 
 def eh_campo(arg):
@@ -316,18 +324,33 @@ def eh_campo(arg):
 def eh_coordenada_campo(m, c):
     return eh_campo and eh_coordenada(c)\
         and ord(obtem_coluna(c)) <= ord(obtem_ultima_coluna(m))\
-        and obtem_linha(c) <= obtem_ultima_coluna(m)
+        and obtem_linha(c) <= obtem_ultima_linha(m)
 
 def campos_iguais(m1, m2): return eh_campo(m1) and eh_campo(m2) and m1 == m2
 
+def aux_in_field(m, c):
+    return (obtem_coluna(c) <= obtem_ultima_coluna(m) and obtem_linha(c) <= obtem_ultima_linha(m))
+
+
 def campo_para_str(m):
+    def mine_counter(m, c):
+        count = 0
+        for v in obtem_coordenadas_vizinhas(c):
+            if aux_in_field(m, v) and eh_parcela_minada(obtem_parcela(m, v)):
+                count += 1
+        if count > 0: return str(count)
+        return ' '
+
     def line_str(m):
         num = lambda x: '0'+str(x) if x < 10 else str(x)
         linestr = ''
         for line in range(1, obtem_ultima_linha(m)+1):
             p = ''
             for col in list(m.keys()):
-                p += parcela_para_str(obtem_parcela(m,cria_coordenada(col, line)))
+                square = obtem_parcela(m,cria_coordenada(col, line))
+                if eh_parcela_limpa(square):
+                    p += mine_counter(m, cria_coordenada(col, line))
+                else: p += parcela_para_str(obtem_parcela(m,cria_coordenada(col, line)))
             linestr += num(line)+'|'+p+'|\n'
         return linestr
 
@@ -338,3 +361,127 @@ def campo_para_str(m):
 
     separator = '  +' + '-'*(ord(obtem_ultima_coluna(m))-64) + '+'
     return header(m) + '\n' + separator + '\n' + line_str(m) + separator
+
+def coloca_minas(m, c, g, n):
+    """
+    Modifica o campo 'm' minando aleatoreamente 'n' parcelas unicas, 
+    evitando a coordenada c
+
+    m (TAD) -- Campo de Minas
+    c (TAD) -- Coordenada
+    g (TAD) -- Gerador
+    n (int) -- Numero de parcelas a minar
+    """
+    exclzone = list(obtem_coordenadas_vizinhas(c)) +[c,]
+    while n > 0:
+        target = cria_coordenada(gera_carater_aleatorio(g,obtem_ultima_coluna(m)), gera_numero_aleatorio(g,obtem_ultima_linha(m)))
+        if target not in exclzone:
+            m[obtem_coluna(target)][obtem_linha(target)-1] = esconde_mina(obtem_parcela(m,target))
+            exclzone.append(target)
+            n -= 1
+    return m
+
+def limpa_campo(m, c):
+    """
+    Limpa a parcela na coordenada c e todas as vizinhas,
+    devlove a parcela indicada
+    """
+    
+    (m[obtem_coluna(c)])[obtem_linha(c)-1] = limpa_parcela(obtem_parcela(m,c))
+    for v in obtem_coordenadas_vizinhas(c):
+        if aux_in_field(m, v): p = obtem_parcela(m, v)
+        if aux_in_field(m, v) and not eh_parcela_minada(p) and eh_parcela_tapada(p):
+            m = limpa_campo(m,v)
+
+    return m
+
+
+##################
+### Auxiliares ###
+##################
+
+def jogo_ganho(m):
+    """
+                                                                        #
+    Recebe um campo e verifica se todas as parcelas não minadas se 
+    encontram limpas, como condição de vitória do jogo.
+
+    m (TAD)       -- Campo de Minas
+    return (Bool) -- Estado do jogo
+    """
+    if len(obtem_coordenadas(m, 'limpas')) + len(obtem_coordenadas(m, 'minadas'))\
+        == (ord(obtem_ultima_coluna(m)) - 64) * obtem_ultima_linha(m):
+            return True
+
+def turno_jogador(m):
+    """
+                                                                        #
+    Permite ao jogador a opção de escolher uma coordenada e aplicar uma
+    ação sobre o campo nessa coordenada. Retorna False caso o jogador
+    ative uma mina, e True caso contrário.
+
+    m (TAD)       -- Campo de Minas
+    return (Bool) -- Resultado da ação
+    """
+
+    move = input('Escolha uma ação, [L]impar ou [M]arcar:')
+    while move not in ['L', 'M']: move = input('Escolha uma ação, [L]impar ou [M]arcar:')
+
+    target = str_para_coordenada(input('Escolha uma coordenada:'))
+    while not eh_coordenada(target): target = str_para_coordenada(input('Escolha uma coordenada:'))
+
+    p = obtem_parcela(m, target)
+
+    if move == 'M': marca_parcela(p)
+    elif move == 'L':
+        if eh_parcela_minada(p): 
+            limpa_parcela(p)
+            return False
+        limpa_campo(m, target)
+    return True
+
+def minas(c, l, n, d, s):
+    """
+
+    Função principal do jogo das minas. Recebe todos os dados necessários
+    para gerar um campo e distribuir minas de forma pseudoaleatória
+
+    c (str)  -- Ultima coluna
+    l (int)  -- Ultima linha
+    n (int)  -- Número de minas
+    d (int)  -- Dimensão do gerador (32/64 bits)
+    s (seed) -- Seed para a geração da posição de minas
+    """
+
+    if  not isinstance(c, str) or not ord('A') <= ord(c) or not ord(c) <= ord('Z')\
+        or not isinstance(l, int) or l > 99 or l < 1\
+        or not isinstance(n, int) or n < 1\
+        or not isinstance(d, int) or d not in [32, 64]\
+        or not isinstance(s, int):
+            raise ValueError('minas: argumentos invalidos')
+    
+    g = cria_gerador(d, s)
+    m = coloca_minas(\
+        cria_campo(c, l),\
+        cria_coordenada(gera_carater_aleatorio(g, c),gera_numero_aleatorio(g, l)),\
+        g, n)
+    
+    state = 1 # gamestate, 1 enquanto jogavél, 0 se terminado
+    def game_display():
+        print('   [Bandeiras'+str(len(obtem_coordenadas(m, 'marcadas')))+'/'+str(n)+']')
+        print(campo_para_str(m))
+    while state == 1:
+        game_display()
+        if not turno_jogador(m): 
+            state = 0
+            game_display()
+            print('BOOOOOOOM!!!')
+            return False
+        if jogo_ganho(m):
+            state = 0
+            game_display()
+            print('VITORIA!!!')
+            return True
+
+
+minas('Z', 5, 6, 32, 2)
