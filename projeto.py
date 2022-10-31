@@ -116,8 +116,8 @@ def coordenada_para_str(c):
 
 def str_para_coordenada(s):
     """Devolve uma coordenada definida pela string dada como argumento"""
-    if len(s) == 3 and s[1] == '0': return cria_coordenada(s[0],int(s[2]))
-    elif len(s) == 3: return cria_coordenada(s[0],int(s[1:]))
+    if len(s) == 3 and s[1] == '0' and isinstance(eval(s[2]), int): return cria_coordenada(s[0],int(s[2]))
+    elif len(s) and isinstance(eval(s[1:]), int)== 3: return cria_coordenada(s[0],int(s[1:]))
 
 def obtem_coordenadas_vizinhas(c):
                                                                         #
@@ -369,7 +369,7 @@ def coloca_minas(m, c, g, n):
     g (TAD) -- Gerador
     n (int) -- Numero de parcelas a minar
     """
-    exclzone = list(obtem_coordenadas_vizinhas(c)) #+[c,]
+    exclzone = list(obtem_coordenadas_vizinhas(c)) +[c,]
     while n > 0:
         target = cria_coordenada(gera_carater_aleatorio(g,obtem_ultima_coluna(m)), gera_numero_aleatorio(g,obtem_ultima_linha(m)))
         if target not in exclzone:
@@ -418,6 +418,16 @@ def jogo_ganho(m):
         == (ord(obtem_ultima_coluna(m)) - 64) * obtem_ultima_linha(m):
             return True
 
+def aux_coord_input():
+    cinput = input('Escolha uma coordenada:')
+    while (not isinstance(cinput, str)) or len(cinput) != 3 or\
+        ord(cinput[0]) < ord('A') or ord(cinput[0]) > ord('Z') or \
+        ord(cinput[1]) < ord('0') or ord(cinput[1]) > ord('9') or\
+        ord(cinput[2]) < ord('0') or ord(cinput[2]) > ord('9') or\
+        int(cinput[1]) == int(cinput[2]) == 0: 
+        cinput = input('Escolha uma coordenada:')
+    return str_para_coordenada(cinput)
+
 def turno_jogador(m):
     """
                                                                         #
@@ -430,17 +440,11 @@ def turno_jogador(m):
     """
 
     move = input('Escolha uma ação, [L]impar ou [M]arcar:')
-    while move not in ['L', 'M']: move = input('Escolha uma ação, [L]impar ou [M]arcar:')
-
-    cinput = input('Escolha uma coordenada:')
-    if  not isinstance(cinput, str) or len(cinput) != 3 or\
-        ord(cinput[0]) < ord('A') or ord(cinput[0]) > ord('Z') or \
-        not isinstance(eval(cinput[1]), int) or not isinstance(eval(cinput[2]), int) \
-        or int(cinput[1]) == int(cinput[2]) == 0: cinput = input('Escolha uma coordenada:')
-    target = str_para_coordenada(cinput)
+    while move not in ['L', 'M',  'debug']: move = input('Escolha uma ação, [L]impar ou [M]arcar:')
+    target = aux_coord_input()
 
     while not eh_coordenada(target) or not eh_coordenada_campo(m, target): 
-        target = str_para_coordenada(input('Escolha uma coordenada:'))
+        target = aux_coord_input()
 
     p = obtem_parcela(m, target)
 
@@ -450,6 +454,10 @@ def turno_jogador(m):
             limpa_parcela(p)
             return False
         limpa_campo(m, target)
+    elif move == 'debug':
+        for c in m:
+            for l in m[c]:
+                limpa_parcela(l)
     return True
 
 def minas(c, l, n, d, s):
@@ -473,15 +481,22 @@ def minas(c, l, n, d, s):
             raise ValueError('minas: argumentos invalidos')
     
     g = cria_gerador(d, s)
-    m = coloca_minas(\
-        cria_campo(c, l),\
-        cria_coordenada(gera_carater_aleatorio(g, c),gera_numero_aleatorio(g, l)),\
-        g, n)
+    m = cria_campo(c, l)
     
-    state = 1 # gamestate, 1 enquanto jogavél, 0 se terminado
+    state = 1   # gamestate, 1 enquanto jogavél, 0 se terminado
     def game_display():
         print('   [Bandeiras '+str(len(obtem_coordenadas(m, 'marcadas')))+'/'+str(n)+']')
         print(campo_para_str(m))
+    
+    game_display()
+    target = aux_coord_input()
+    while not eh_coordenada_campo(m, target):
+        target = aux_coord_input()
+    coloca_minas(m,\
+        target,\
+        g, n)
+    limpa_campo(m, target)
+
     while state == 1:
         game_display()
         if not turno_jogador(m): 
@@ -495,6 +510,7 @@ def minas(c, l, n, d, s):
             print('VITORIA!!!')
             return True
 
+
+
 #print(eh_coordenada_campo(cria_campo('X',5), cria_coordenada('X', 5)))
 
-minas('Z', 5, 10, 32, 15)
