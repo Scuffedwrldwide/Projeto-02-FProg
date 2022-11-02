@@ -117,7 +117,7 @@ def coordenada_para_str(c):
 def str_para_coordenada(s):
     """Devolve uma coordenada definida pela string dada como argumento"""
     if len(s) == 3 and s[1] == '0' and isinstance(eval(s[2]), int): return cria_coordenada(s[0],int(s[2]))
-    elif len(s) and isinstance(eval(s[1:]), int)== 3: return cria_coordenada(s[0],int(s[1:]))
+    elif len(s) == 3 and isinstance(eval(s[1:]), int): return cria_coordenada(s[0],int(s[1:]))
 
 def obtem_coordenadas_vizinhas(c):
                                                                         #
@@ -392,15 +392,6 @@ def limpa_campo(m, c):
                     m = limpa_campo(m,v)
     return m
 
-
-
-    
-
-    
-
-    
-
-
 ##################
 ### Auxiliares ###
 ##################
@@ -510,7 +501,4 @@ def minas(c, l, n, d, s):
             print('VITORIA!!!')
             return True
 
-
-
-#print(eh_coordenada_campo(cria_campo('X',5), cria_coordenada('X', 5)))
-
+#minas('Z', 12, 25, 32, 20324)
