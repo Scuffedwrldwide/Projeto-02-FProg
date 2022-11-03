@@ -10,7 +10,7 @@ def cria_gerador(b, s):
     b (int) -- Bits
     s (int) -- Seed
     """
-    if not isinstance(b, int) or not isinstance(s, int) or b not in [32,64]:
+    if not isinstance(b, int) or not isinstance(s, int) or b not in [32,64] or s > 2**b:
         raise ValueError('cria_gerador: argumentos invalidos')
     return [b, s]
 
@@ -439,7 +439,7 @@ def turno_jogador(m):
 
     p = obtem_parcela(m, target)
 
-    if move == 'M': marca_parcela(p)
+    if move == 'M': alterna_bandeira(p)
     elif move == 'L':
         if eh_parcela_minada(p): 
             limpa_parcela(p)
@@ -501,4 +501,4 @@ def minas(c, l, n, d, s):
             print('VITORIA!!!')
             return True
 
-#minas('Z', 12, 25, 32, 20324)
+#minas('Z', 27, 50, 32, 2**32)
