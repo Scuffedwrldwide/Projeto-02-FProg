@@ -270,7 +270,7 @@ def cria_copia_campo(m):
     """ Retorna uma copia profunda do minefield (m)"""
     copy = dict()
     if eh_campo(m):
-        for col in range(65, ord(obtem_ultima_coluna(m))): copy.update({chr(col): m[chr(col)]})
+        for col in range(65, ord(obtem_ultima_coluna(m)) + 1): copy.update({chr(col): m[chr(col)]})
         return copy
     
 def obtem_ultima_coluna(m): return list(m.keys())[-1]
@@ -297,14 +297,15 @@ def obtem_coordenadas(m, s):
     """
 
     coords = list()
-    for c in list(m.keys()):
-        for l in range(0, len(m[c])):
-            p = m[c][l]
+    for l in range(0, obtem_ultima_linha(m)):
+        for c in range(ord('A'), ord(obtem_ultima_coluna(m)) + 1):
+            current = cria_coordenada(chr(c),l+1)
+            p = obtem_parcela(m, current)
             if  (s == 'minadas' and eh_parcela_minada(p)) or\
                 (s == 'limpas' and eh_parcela_limpa(p)) or\
                 (s == 'tapadas' and eh_parcela_tapada(p)) or\
                 (s == 'marcadas' and eh_parcela_marcada(p)):
-                    coords.append(cria_coordenada(c,l+1))
+                    coords.append(current)
     return tuple(coords)
 
 def obtem_numero_minas_vizinhas(m, c):
@@ -509,5 +510,3 @@ def minas(c, l, n, d, s):
             game_display()
             print('VITORIA!!!')
             return True
-
-cria_campo('BDddvvse ', 25)
