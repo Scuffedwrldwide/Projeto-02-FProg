@@ -10,7 +10,7 @@ def cria_gerador(b, s):
     b (int) -- Bits
     s (int) -- Seed
     """
-    if not isinstance(b, int) or not isinstance(s, int) or b not in [32,64] or s > 2**b:
+    if not isinstance(b, int) or not isinstance(s, int) or b not in [32,64] or s <= 0 or s > 2**b:
         raise ValueError('cria_gerador: argumentos invalidos')
     return [b, s]
 
@@ -23,7 +23,7 @@ def obtem_estado(g):
 
 def define_estado(g, s):
     """ Define o novo valor do estado do gerador (g) como o inteiro (s) """
-    g[1] == s 
+    g[1] = s 
     return s
 
 def atualiza_estado(g):
@@ -39,8 +39,13 @@ def atualiza_estado(g):
     return obtem_estado(g)
 
 def eh_gerador(g):
-    if g[0] == 32 or g[0] == 64 and isinstance(g[1], int): return True
+    if not isinstance(g, tuple) or len(g) != 2 or not isinstance(g[0], int) or not isinstance(g[1], int): return False
+    if g[0] in [32, 64] and g[1] <= 2 ** g[0]: return True # 2 ** g[0] representa o Integer Limit para o tamanho escolhido
     return False
+
+def geradores_iguais(g1, g2):
+    return eh_gerador(g1) and eh_gerador(g2)\
+            and gerador_para_str(g1) == gerador_para_str(g2) ### BAD IDEA?? ###
 
 def gerador_para_str(g): 
     if eh_gerador(g): return 'xorshift'+str(g[0])+'(s='+str(g[1])+')'
@@ -253,6 +258,8 @@ def cria_campo(c, l):
     l (int) -- Linhas pretendidas
     """
     minefield = dict()
+    try:  eh_coordenada(cria_coordenada(c,l))
+    except ValueError: raise ValueError('cria_campo: argumentos invalidos')
     if eh_coordenada(cria_coordenada(c, l)):
         for col in range(65, ord(c)+1):
             minefield.update({chr(col): [cria_parcela() for i in range(l)]})
@@ -305,10 +312,10 @@ def obtem_numero_minas_vizinhas(m, c):
     verificam minadas
     
     """
-    if not eh_coordenada_campo(m, c): raise TypeError ### idk man ###
+    if not eh_coordenada_do_campo(m, c): raise TypeError ### idk man ###
     count = 0
     for coord in obtem_coordenadas_vizinhas(c):
-        if eh_coordenada_campo(m, coord) and eh_parcela_minada(obtem_parcela(m, coord)): count += 1
+        if eh_coordenada_do_campo(m, coord) and eh_parcela_minada(obtem_parcela(m, coord)): count += 1
     return count
 
 def eh_campo(arg):
@@ -323,7 +330,7 @@ def eh_campo(arg):
         return True
     return isinstance(arg, dict) and  0 < len(arg) <= 27 and keys(arg) and values(arg)
 
-def eh_coordenada_campo(m, c):
+def eh_coordenada_do_campo(m, c):
     return eh_campo(m) and eh_coordenada(c)\
         and ord(obtem_coluna(c)) <= ord(obtem_ultima_coluna(m))\
         and obtem_linha(c) <= obtem_ultima_linha(m)
@@ -334,7 +341,7 @@ def campo_para_str(m):
     def mine_counter(m, c):
         count = 0
         for v in obtem_coordenadas_vizinhas(c):
-            if eh_coordenada_campo(m, v) and eh_parcela_minada(obtem_parcela(m, v)):
+            if eh_coordenada_do_campo(m, v) and eh_parcela_minada(obtem_parcela(m, v)):
                 count += 1
         if count > 0: return str(count)
         return ' '
@@ -385,9 +392,9 @@ def limpa_campo(m, c):
     devlove o campo
     """
     limpa_parcela(obtem_parcela(m,c))
-    if eh_coordenada_campo(m,c) and obtem_numero_minas_vizinhas(m, c) == 0:
+    if eh_coordenada_do_campo(m,c) and obtem_numero_minas_vizinhas(m, c) == 0:
         for v in obtem_coordenadas_vizinhas(c):
-            if eh_coordenada_campo(m, v): 
+            if eh_coordenada_do_campo(m, v): 
                 p = obtem_parcela(m, v)
                 if not eh_parcela_minada(p) and eh_parcela_tapada(p):
                     m = limpa_campo(m,v)
@@ -435,7 +442,7 @@ def turno_jogador(m):
     while move not in ['L', 'M',  'debug']: move = input('Escolha uma ação, [L]impar ou [M]arcar:')
     target = aux_coord_input()
 
-    while not eh_coordenada(target) or not eh_coordenada_campo(m, target): 
+    while not eh_coordenada(target) or not eh_coordenada_do_campo(m, target): 
         target = aux_coord_input()
 
     p = obtem_parcela(m, target)
@@ -482,7 +489,7 @@ def minas(c, l, n, d, s):
     
     game_display()
     target = aux_coord_input()
-    while not eh_coordenada_campo(m, target):
+    while not eh_coordenada_do_campo(m, target):
         target = aux_coord_input()
     coloca_minas(m,\
         target,\
