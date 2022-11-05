@@ -260,7 +260,7 @@ def cria_campo(c, l):
     """
     minefield = dict()
     try:  eh_coordenada(cria_coordenada(c,l))
-    except ValueError: raise ValueError('cria_campo: argumentos invalidos')
+    except: raise ValueError('cria_campo: argumentos invalidos')
     if eh_coordenada(cria_coordenada(c, l)):
         for col in range(65, ord(c)+1):
             minefield.update({chr(col): [cria_parcela() for i in range(l)]})
@@ -509,3 +509,5 @@ def minas(c, l, n, d, s):
             game_display()
             print('VITORIA!!!')
             return True
+
+cria_campo('BDddvvse ', 25)
