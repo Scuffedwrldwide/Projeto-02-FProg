@@ -91,8 +91,8 @@ def cria_coordenada(col,lin):
     return (TAD) -- Coordenadas  
     """
     if  not isinstance(col, str) or ord(col) < ord('A') or ord(col) > ord('Z')\
-        or not isinstance(lin, int) or lin < 1 or lin > 99:\
-        #or not eh_coordenada((col,lin)):
+        or not isinstance(lin, int) or lin < 1 or lin > 99\
+        or len(col) != 1:
             raise ValueError('cria_coordenada: argumentos invalidos')
     return (col,lin)
 
@@ -102,7 +102,7 @@ def obtem_linha(c): return c[1]
 def eh_coordenada(arg):
     """ Verifica se um argumento é uma coordenada. """
     if  isinstance(arg, tuple) and len(arg) == 2 and isinstance(arg[0], str) and isinstance(arg[1], int)\
-        and ord(arg[0]) >= ord('A') and ord(arg[0]) <= ord('Z') and 1 <= arg[1] and arg[1] <= 99:
+        and ord(arg[0]) >= ord('A') and ord(arg[0]) <= ord('Z') and 1 <= arg[1] and arg[1] <= 99 and len(arg[0]) == 1:
             return True
     return False
 
