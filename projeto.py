@@ -474,16 +474,12 @@ def minas(c, l, n, d, s):
     d (int)  -- Dimensão do gerador (32/64 bits)
     s (seed) -- Seed para a geração da posição de minas
     """
-
-    if  not isinstance(c, str) or not ord('A') <= ord(c) or not ord(c) <= ord('Z')\
-        or not isinstance(l, int) or l > 99 or l < 1\
-        or not isinstance(n, int) or n < 1\
-        or not isinstance(d, int) or d not in [32, 64]\
-        or not isinstance(s, int):
-            raise ValueError('minas: argumentos invalidos')
     
-    g = cria_gerador(d, s)
-    m = cria_campo(c, l)
+    try:
+        g = cria_gerador(d, s)
+        m = cria_campo(c, l)                    # \/ Devem existir menos minas que casas no campo, contando com as 9 limpas inicialmente
+        if not isinstance(n, int) or n < 1 or n > (ord(c) - 64)*l - 9: raise ValueError 
+    except: raise ValueError('minas: argumentos invalidos')
     
     state = 1   # gamestate, 1 enquanto jogavél, 0 se terminado
     def game_display():
