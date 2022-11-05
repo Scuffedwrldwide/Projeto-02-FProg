@@ -39,8 +39,8 @@ def atualiza_estado(g):
     return obtem_estado(g)
 
 def eh_gerador(g):
-    if not isinstance(g, tuple) or len(g) != 2 or not isinstance(g[0], int) or not isinstance(g[1], int): return False
-    if g[0] in [32, 64] and g[1] <= 2 ** g[0]: return True # 2 ** g[0] representa o Integer Limit para o tamanho escolhido
+    if not isinstance(g, list) or len(g) != 2 or not isinstance(g[0], int) or not isinstance(g[1], int): return False
+    if g[0] in [32, 64] and g[1] <= (2 ** g[0]): return True # 2 ** g[0] representa o Integer Limit para o tamanho escolhido
     return False
 
 def geradores_iguais(g1, g2):
@@ -60,7 +60,7 @@ def gera_numero_aleatorio(g, n):
     n (int)      -- Limite superior do intervalo
     return (int) -- Número aleatório
     """
-    if not eh_gerador(g) or not isinstance(n, int) or n <= 1: raise ValueError ### HUH?? ###
+    if not eh_gerador(g) or not isinstance(n, int) or n < 1: raise ValueError ### HUH?? ###
     atualiza_estado(g)
     return 1 + obtem_estado(g)%n
 
@@ -508,3 +508,4 @@ def minas(c, l, n, d, s):
             game_display()
             print('VITORIA!!!')
             return True
+print([gera_numero_aleatorio(cria_gerador(64, 777), 1) for i in range(11)])
