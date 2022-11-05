@@ -174,7 +174,7 @@ def cria_copia_parcela(p):
     if eh_parcela(p): return p.copy()
 
 def limpa_parcela(p):
-    """ Atualiza o estado da parcela para 'limpa' ('?') """
+    """ Atualiza o estado da parcela para 'limpa' ('?') ou 'limpa minada' ('X')"""
     if eh_parcela(p) and not eh_parcela_minada(p): 
         p.update({'state': '?'})
         return p
@@ -184,21 +184,21 @@ def limpa_parcela(p):
     raise ValueError ### WHICH?? ###
 
 def marca_parcela(p):
-    """ Atualiza o estado da parcela para 'marcada' ('@') """
+    """ Atualiza o estado do exterior da parcela para 'marcada' ('@') """
     if eh_parcela(p): 
         p.update({'state': '@'})
         return p
     raise ValueError ### WHICH?? ###
 
 def desmarca_parcela(p):
-    """ Atualiza o estado da parcela para 'tapada' ('#') """
+    """ Atualiza o estado do exterior da parcela para 'tapada' ('#') """
     if eh_parcela(p): 
         p.update({'state': '#'})
         return p
     raise ValueError ### WHICH?? ###
 
 def esconde_mina(p):
-    """ Atualiza o estado da parcela para 'minada' ('X') """
+    """ Atualiza o estado do interior da parcela para 'minada' """
     if eh_parcela(p): 
         p.update({'mine': 1})
         return p
@@ -229,7 +229,8 @@ def parcelas_iguais(p1,p2):
     return False
 
 def parcela_para_str(p):
-    if eh_parcela(p): return p['state']
+    if eh_parcela_limpa(p) and eh_parcela_minada(p): return 'X'
+    elif eh_parcela(p): return p['state']
     raise TypeError ### WHICH? ###
 
 def alterna_bandeira(p):
