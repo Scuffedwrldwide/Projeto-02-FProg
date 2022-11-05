@@ -86,8 +86,8 @@ def cria_coordenada(col,lin):
     return (TAD) -- Coordenadas  
     """
     if  not isinstance(col, str) or ord(col) < ord('A') or ord(col) > ord('Z')\
-        or not isinstance(lin, int) or lin < 1 or lin > 99\
-        or not eh_coordenada((col,lin)):
+        or not isinstance(lin, int) or lin < 1 or lin > 99:\
+        #or not eh_coordenada((col,lin)):
             raise ValueError('cria_coordenada: argumentos invalidos')
     return (col,lin)
 
@@ -133,7 +133,8 @@ def obtem_coordenadas_vizinhas(c):
         (char(1), line+1), (char(0), line+1), (char(-1), line+1),   # Abaixo da coordenada
         (char(-1), line),                                           # Esquerda da coordenada
     ]:
-        if eh_coordenada(i): viz.append(i)
+        try: viz.append(cria_coordenada(i[0],i[1]))
+        except ValueError: pass
     return tuple(viz)
 
 def obtem_coordenada_aleatoria(c, g):
@@ -500,5 +501,3 @@ def minas(c, l, n, d, s):
             game_display()
             print('VITORIA!!!')
             return True
-
-#minas('Z', 27, 50, 32, 2**32)
