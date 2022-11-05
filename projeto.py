@@ -212,7 +212,7 @@ def eh_parcela(arg):
 
 def eh_parcela_limpa(p): 
     if not eh_parcela(p): raise ValueError ### WHICH?? ###
-    return p['state'] == '?'
+    return p['state'] == '?' or p['state'] == 'X'
 def eh_parcela_marcada(p): 
     if not eh_parcela(p): raise ValueError ### WHICH?? ###
     return p['state'] == '@'
@@ -508,4 +508,3 @@ def minas(c, l, n, d, s):
             game_display()
             print('VITORIA!!!')
             return True
-print([gera_numero_aleatorio(cria_gerador(64, 777), 1) for i in range(11)])
