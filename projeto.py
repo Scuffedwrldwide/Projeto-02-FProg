@@ -418,6 +418,7 @@ def jogo_ganho(m):
     if len(obtem_coordenadas(m, 'limpas')) + len(obtem_coordenadas(m, 'minadas'))\
         == (ord(obtem_ultima_coluna(m)) - 64) * obtem_ultima_linha(m):
             return True
+    return False
 
 def aux_coord_input():
     cinput = input('Escolha uma coordenada:')
