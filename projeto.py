@@ -355,7 +355,7 @@ def campo_para_str(m):
             p = ''
             for col in list(m.keys()):
                 square = obtem_parcela(m,cria_coordenada(col, line))
-                if eh_parcela_limpa(square):
+                if eh_parcela_limpa(square) and not eh_parcela_minada(square):
                     p += mine_counter(m, cria_coordenada(col, line))
                 else: p += parcela_para_str(obtem_parcela(m,cria_coordenada(col, line)))
             linestr += num(line)+'|'+p+'|\n'
