@@ -128,7 +128,7 @@ def obtem_coordenadas_vizinhas(c):
                                                                         #
     """Dada uma coordenada, devolve as coordenadas vizinhas, começando 
     pela superior esquerda na ordem dos ponteiros do relógio."""
-    if not eh_coordenada(c): raise TypeError
+    if not eh_coordenada(c): return
     viz = []
     char = lambda offset: chr(ord(c[0])+offset)
     line = obtem_linha(c)
