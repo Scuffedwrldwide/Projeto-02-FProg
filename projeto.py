@@ -224,7 +224,7 @@ def cria_parcela():
 def cria_copia_parcela(p): 
     """
     (Baixo Nível) 
-    Retorna uma copia profunda da Parcela
+    Retorna uma copia da Parcela
     
     p (TAD) -- Parcela
     """
@@ -434,7 +434,10 @@ def eh_coordenada_do_campo(m, c):
 
 def campos_iguais(m1, m2):
     """ (Baixo Nível) Verifica a igualdade de dois campos """
-    return eh_campo(m1) and eh_campo(m2) and m1 == m2
+    def check(estado):
+        return obtem_coordenadas(m1,estado) == obtem_coordenadas(m2, estado)
+    return check('minadas') and check('tapadas') and check('marcadas') and check('limpas')
+
 
 def campo_para_str(m):
     """ 
