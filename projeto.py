@@ -4,6 +4,7 @@
 
 def cria_gerador(b, s):
     """
+    (Baixo Nível)
     Recebe um inteiro (b) correspondente ao número de bits, entre 32 e 64,
     e um inteiro representando a seed. Devolve o Gerador correspondente.
 
@@ -19,13 +20,13 @@ def cria_gerador(b, s):
     return [b, s]
 
 def cria_copia_gerador(g):
-    """ Devolve uma cópia de um gerador """
+    """ (Baixo Nível) Devolve uma cópia de um gerador """
     return g.copy() 
 
 def obtem_estado(g): return g[1]
 
 def define_estado(g, s):
-    """ Define o novo valor do estado do gerador (g) como o inteiro (s) """
+    """ (Baixo Nível) Define o novo valor do estado do gerador (g) como o inteiro (s) """
     g[1] = s 
     return s
 
@@ -267,7 +268,7 @@ def eh_parcela(arg):
             return True
     return False
 
-### As seguintes funções verificam a primeira propriedade da parcela
+### As seguintes funções de baixo nível verificam a primeira propriedade da parcela
 def eh_parcela_limpa(p): 
     if not eh_parcela(p): raise ValueError 
     return p['state'] == '?' or p['state'] == 'X'
@@ -277,7 +278,7 @@ def eh_parcela_marcada(p):
 def eh_parcela_tapada(p):
     if not eh_parcela(p): raise ValueError 
     return p['state'] == '#'  
-### A seguinte função verifica a segunda propriedade da parcela  
+### A seguinte função de baixo nível verifica a segunda propriedade da parcela  
 def eh_parcela_minada(p): 
     if not eh_parcela(p): raise ValueError 
     return p['mine'] == 1
@@ -344,13 +345,11 @@ def cria_copia_campo(m):
     
     m (TAD) -- Campo de Minas
     """
-    copy = dict()
-    if eh_campo(m):
-        for col in range(65, ord(obtem_ultima_coluna(m)) + 1):
-             copy.update({chr(col): [cria_copia_parcela(
-                                    obtem_parcela(m, cria_coordenada(chr(col), l)))
-                                    for l in range(1, obtem_ultima_linha(m)+1)]})
-        return copy
+    copy = cria_campo(obtem_ultima_coluna(m), obtem_ultima_linha(m))
+    for c in obtem_coordenadas(m, 'minadas'): esconde_mina(obtem_parcela(copy, c))
+    for c in obtem_coordenadas(m, 'marcadas'): marca_parcela(obtem_parcela(copy, c))
+    for c in obtem_coordenadas(m, 'limpas'): limpa_parcela(obtem_parcela(copy, c))
+    return copy
     
 def obtem_ultima_coluna(m):
     """ (Baixo Nível) """
