@@ -346,7 +346,10 @@ def cria_copia_campo(m):
     """
     copy = dict()
     if eh_campo(m):
-        for col in range(65, ord(obtem_ultima_coluna(m)) + 1): copy.update({chr(col): m[chr(col)]})
+        for col in range(65, ord(obtem_ultima_coluna(m)) + 1):
+             copy.update({chr(col): [cria_copia_parcela(
+                                    obtem_parcela(m, cria_coordenada(chr(col), l)))
+                                    for l in range(1, obtem_ultima_linha(m)+1)]})
         return copy
     
 def obtem_ultima_coluna(m):
@@ -516,9 +519,10 @@ def limpa_campo(m, c):
     m (TAD) -- Campo de Minas
     c (TAD) -- Coordenada
     """
-    limpa_parcela(obtem_parcela(m,c))                                           # Limpa a Coordenada pretendida
-    if eh_coordenada_do_campo(m,c) and obtem_numero_minas_vizinhas(m, c) == 0:  # Procura limpar todas as conectadas à Coordenada inicial
-        for v in obtem_coordenadas_vizinhas(c):                                 # Este processo é feito recursivamente, vizinhança a vizinhança
+    limpa_parcela(obtem_parcela(m,c))                                                   # Limpa a Coordenada pretendida
+    if eh_coordenada_do_campo(m, c) and eh_parcela_minada(obtem_parcela(m,c)): return m # Não efetua limpeza da vizinhanca caso a parcela seja minada
+    if eh_coordenada_do_campo(m,c) and obtem_numero_minas_vizinhas(m, c) == 0:          # Procura limpar todas as conectadas à Coordenada inicial
+        for v in obtem_coordenadas_vizinhas(c):                                         # Este processo é feito recursivamente, vizinhança a vizinhança
             if eh_coordenada_do_campo(m, v): 
                 p = obtem_parcela(m, v)
                 if not eh_parcela_minada(p) and eh_parcela_tapada(p):
