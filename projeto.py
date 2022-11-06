@@ -4,9 +4,14 @@
 
 def cria_gerador(b, s):
     """
-    Recebe um inteiro (b) correspondente ao número de bits e um inteiro
-    correspondente à seed. Devolve o gerador correspondente.
-                                                                        #
+    Recebe um inteiro (b) correspondente ao número de bits, entre 32 e 64,
+    e um inteiro representando a seed. Devolve o Gerador correspondente.
+
+    Ex.
+       bits | seed
+        [32, 73]
+
+
     b (int) -- Bits
     s (int) -- Seed
     """
@@ -15,11 +20,10 @@ def cria_gerador(b, s):
     return [b, s]
 
 def cria_copia_gerador(g):
-    """Devolve uma cópia de um gerador"""
-    return g.copy() ### WHAT ###
+    """ Devolve uma cópia de um gerador """
+    return g.copy() 
 
-def obtem_estado(g):
-    return g[1]
+def obtem_estado(g): return g[1]
 
 def define_estado(g, s):
     """ Define o novo valor do estado do gerador (g) como o inteiro (s) """
@@ -27,7 +31,17 @@ def define_estado(g, s):
     return s
 
 def atualiza_estado(g):
-    if not eh_gerador(g): raise TypeError ### IS IT?? ###
+    """
+    (Baixo Nível)
+    Aceita um Gerador (g) atualiza a propriedade interna do seu estado
+    aplicando 3 operações de xorshift sobre os bits individuais do estado. 
+    
+    Isto consiste num deslocamento de bits (shift) à esquerda ou à direita, 
+    seguido de um ou-exclusivo (xor) entre o resultado do shift e o próprio estado.
+    A dimensão do gerador controla o número de bits a deslocar (shift)
+    g (TAD)      -- Gerador
+    """
+    if not eh_gerador(g): raise TypeError
     if g[0] == 32:
         g[1] ^= (g[1] << 13) & 0xFFFFFFFF
         g[1] ^= (g[1] >> 17) & 0xFFFFFFFF
@@ -39,19 +53,23 @@ def atualiza_estado(g):
     return obtem_estado(g)
 
 def eh_gerador(g):
+    """ (Baixo Nível) Verifica se um argumento é um Gerador (TAD) """
     if not isinstance(g, list) or len(g) != 2 or not isinstance(g[0], int) or not isinstance(g[1], int): return False
     if g[0] in [32, 64] and g[1] <= (2 ** g[0]): return True # 2 ** g[0] representa o Integer Limit para o tamanho escolhido
     return False
 
 def geradores_iguais(g1, g2):
+    """ (Baixo Nível) Verifica a igualdade de dois Geradores """
     return eh_gerador(g1) and eh_gerador(g2)\
-            and gerador_para_str(g1) == gerador_para_str(g2) ### BAD IDEA?? ###
+            and gerador_para_str(g1) == gerador_para_str(g2)
 
 def gerador_para_str(g): 
-    if eh_gerador(g): return 'xorshift'+str(g[0])+'(s='+str(g[1])+')'
+    """ (Baixo Nível) Devolve a representação do Gerador """
+    if eh_gerador(g): return 'xorshift'+str(g[0])+'(s='+str(obtem_estado(g))+')'
 
 def gera_numero_aleatorio(g, n):
     """
+    (Alto Nível)
     Aceita um gerador (g) e atualiza o seu estado, devolvendo um número
     aleatório no intervalo [1, n] obtido a partir do estado atualizado
     de g por (1 + mod(s, n)), sendo mod() a operação de divisão inteira
@@ -60,16 +78,16 @@ def gera_numero_aleatorio(g, n):
     n (int)      -- Limite superior do intervalo
     return (int) -- Número aleatório
     """
-    if not eh_gerador(g) or not isinstance(n, int) or n < 1: raise ValueError ### HUH?? ###
+    if not eh_gerador(g) or not isinstance(n, int) or n < 1: raise ValueError 
     atualiza_estado(g)
     return 1 + obtem_estado(g)%n
 
 def gera_carater_aleatorio(g, c):
     """
-    Aceita um gerador (g) e atualiza o seu estado, devolvendo um número
-    aleatório no intervalo [1, n] obtido a partir do estado atualizado
-    de g por (1 + mod(s, n)), sendo mod() a operação de divisão inteira
-                                                                        #
+    (Alto Nível)
+    Aceita um Gerador (g) e atualiza o seu estado, devolvendo um carater
+    aleatório entre A e C obtido a partir do estado atualizado de g
+
     g (TAD)      -- Gerador
     c (int)      -- Carater 'máximo' 
     return (str) -- Carater aleatório
@@ -77,14 +95,20 @@ def gera_carater_aleatorio(g, c):
     if ord(c) < ord('A')  or  ord(c) > ord('Z'): raise ValueError
     return chr(gera_numero_aleatorio(g, ord(c)-64)+64) # Gera um número em [65, ord(c)] sendo 65 o codigo ASCII de 'A'
 
-##################
-### Coordenada ###
-##################
+########################
+### TAD - Coordenada ###
+########################
 
 def cria_coordenada(col,lin): 
     """
+    (Baixo nível)
     Recebe uma string correspondente à coluna e um inteiro de 0 a 99
-    e devolve a correspondente coordenada, um tipo imutável
+    e devolve a correspondente Coordenada, um tipo imutável
+
+    Ex. 
+
+     coluna | linha
+        ('M', 3)
 
     col    (str) -- Carater da coluna
     lin    (int) -- Inteiro da linha
@@ -100,34 +124,50 @@ def obtem_coluna(c): return c[0]
 def obtem_linha(c): return c[1]
 
 def eh_coordenada(arg):
-    """ Verifica se um argumento é uma coordenada. """
+    """ (Baixo nível) Verifica se um argumento é uma Coordenada (TAD) """
     if  isinstance(arg, tuple) and len(arg) == 2 and len(arg[0]) == 1 and isinstance(arg[0], str) and isinstance(arg[1], int)\
         and ord(arg[0]) >= ord('A') and ord(arg[0]) <= ord('Z') and 1 <= arg[1] and arg[1] <= 99:
             return True
     return False
 
 def coordenadas_iguais(c1, c2):
-    """ Compara duas coordenadas e verifica se são iguais """
+    """ (Baixo nível) Verifica a igualdade de duas Coordenadas """
     if  eh_coordenada(c1) and eh_coordenada(c2) and obtem_coluna(c1) == obtem_coluna(c2)\
         and obtem_linha(c1) ==  obtem_linha(c2):
             return True
     return False
 
 def coordenada_para_str(c):
-    """Devolve uma string que representa a coordenada dada como argumento"""
-    if not eh_coordenada: raise TypeError ### DO I? ###
+    """
+    (Baixo nível) 
+    Devolve uma representação da Coordenada
+
+    c (str) -- Coordenada
+    """
+    if not eh_coordenada: raise TypeError 
     num = lambda x: '0'+str(x) if x < 10 else str(x)
     return c[0] + num(c[1])
 
 def str_para_coordenada(s):
-    """Devolve uma coordenada definida pela string dada como argumento"""
+    """ 
+    (Baixo nível) 
+    Devolve uma Coordenada definida pela string dada 
+    como argumento, ex. 'M03' 
+
+    s (str) -- Representação da Coordenada
+    """
     if len(s) == 3 and s[1] == '0' and isinstance(eval(s[2]), int): return cria_coordenada(s[0],int(s[2]))
     elif len(s) == 3 and isinstance(eval(s[1:]), int): return cria_coordenada(s[0],int(s[1:]))
 
 def obtem_coordenadas_vizinhas(c):
                                                                         #
-    """Dada uma coordenada, devolve as coordenadas vizinhas, começando 
-    pela superior esquerda na ordem dos ponteiros do relógio."""
+    """
+    (Alto Nível)
+    Dada uma Coordenada, devolve um tuplo contendo as Coordenadas vizinhas, 
+    começando pela superior esquerda na ordem dos ponteiros do relógio.
+    
+    c (TAD) -- Coordenada
+    """
     if not eh_coordenada(c): return
     viz = []
     char = lambda offset: chr(ord(c[0])+offset)
@@ -143,11 +183,12 @@ def obtem_coordenadas_vizinhas(c):
     return tuple(viz)
 
 def obtem_coordenada_aleatoria(c, g):
-                                                                        #
-    """ Utilizando o TAD Gerador, devolve uma coordenada alearória.
+    """ 
+    (Alto Nível)
+    Utilizando o TAD Gerador, devolve uma Coordenada alearória.
     O argumento C define a maior linha e coluna possíveis. Pode ser
     entendido geométricamente como o 'canto inferior direito' da àrea
-    na qual se procura gerar uma coord. aleatória 
+    na qual se procura gerar uma Coordenada aleatória 
     
     c (TAD) -- Maior linha e coluna possíveis
     g (TAD) -- Gerador
@@ -158,82 +199,104 @@ def obtem_coordenada_aleatoria(c, g):
         gera_numero_aleatorio(g,line)
     )
 
-###############
-### Parcela ###
-###############
+#####################
+### TAD - Parcela ###
+#####################
 
-# Estados:
-#   Limpa Destapada  -- ( ? ) 
-#   Marcada Tapada   -- ( @ )
-#   Tapada           -- ( # )
-#   Minada Destapada -- ( X )
+def cria_parcela(): 
+    """
+    (Baixo Nível)
+    Cria uma Parcela, por defeito tapada e não minada. Cada parcela
+    possui informação acerca do seu estado exterior e existência de mina
 
-def cria_parcela(): return {'state': '#', 'mine': 0} 
+    Estados Exteriores:
+        Limpa Destapada  -- ( ? ) 
+        Marcada Tapada   -- ( @ )
+        Tapada           -- ( # )
+        Minada Destapada -- ( X )
+
+    Existência de Mina: 0 se não, 1 se sim
+    """
+    return {'state': '#', 'mine': 0} 
 
 def cria_copia_parcela(p): 
+    """
+    (Baixo Nível) 
+    Retorna uma copia profunda da Parcela
+    
+    p (TAD) -- Parcela
+    """
+    
     if eh_parcela(p): return p.copy()
 
 def limpa_parcela(p):
-    """ Atualiza o estado da parcela para 'limpa' ('?') ou 'limpa minada' ('X')"""
+    """ (Baixo Nível) Atualiza o estado exterior da Parcela para 'limpa' ('?') ou 'limpa minada' ('X')"""
     if eh_parcela(p) and not eh_parcela_minada(p): 
         p.update({'state': '?'})
         return p
     elif eh_parcela(p) and eh_parcela_minada(p): 
         p.update({'state': 'X'})
         return p
-    raise ValueError ### WHICH?? ###
+    raise ValueError
 
 def marca_parcela(p):
-    """ Atualiza o estado do exterior da parcela para 'marcada' ('@') """
+    """ (Baixo Nível) Atualiza o estado do exterior da Parcela para 'marcada' ('@') """
     if eh_parcela(p): 
         p.update({'state': '@'})
         return p
-    raise ValueError ### WHICH?? ###
+    raise ValueError
 
 def desmarca_parcela(p):
-    """ Atualiza o estado do exterior da parcela para 'tapada' ('#') """
+    """ (Baixo Nível) Atualiza o estado do exterior da Parcela para 'tapada' ('#') """
     if eh_parcela(p): 
         p.update({'state': '#'})
         return p
-    raise ValueError ### WHICH?? ###
+    raise ValueError
 
 def esconde_mina(p):
-    """ Atualiza o estado do interior da parcela para 'minada' """
+    """ (Baixo Nível) Atualiza o estado do interior da Parcela para 'minada' """
     if eh_parcela(p): 
         p.update({'mine': 1})
         return p
-    raise ValueError ### WHICH?? ###
+    raise ValueError
 
 def eh_parcela(arg):
+    """ (Baixo Nível) Verifica se um dado argumento é uma Parcela (TAD) """
     if isinstance(arg, dict) and list(arg.keys()) == ['state', 'mine']\
         and arg['state'] in ['?', '@', '#', 'X'] and arg['mine'] in [0,1]:
             return True
     return False
 
+### As seguintes funções verificam a primeira propriedade da parcela
 def eh_parcela_limpa(p): 
-    if not eh_parcela(p): raise ValueError ### WHICH?? ###
+    if not eh_parcela(p): raise ValueError 
     return p['state'] == '?' or p['state'] == 'X'
 def eh_parcela_marcada(p): 
-    if not eh_parcela(p): raise ValueError ### WHICH?? ###
+    if not eh_parcela(p): raise ValueError 
     return p['state'] == '@'
 def eh_parcela_tapada(p):
-    if not eh_parcela(p): raise ValueError ### WHICH?? ###
-    return p['state'] == '#'    
+    if not eh_parcela(p): raise ValueError 
+    return p['state'] == '#'  
+### A seguinte função verifica a segunda propriedade da parcela  
 def eh_parcela_minada(p): 
-    if not eh_parcela(p): raise ValueError ### WHICH?? ###
+    if not eh_parcela(p): raise ValueError 
     return p['mine'] == 1
 
 def parcelas_iguais(p1,p2):
+    """ (Baixo Nível) Verifica a igualdade de duas parcelas"""
     if not eh_parcela(p1) or not eh_parcela(p2): return False
     if p1 == p2: return True
     return False
 
 def parcela_para_str(p):
+    """ (Baixo Nível) Retorna uma representação do estado da parcela"""
     if eh_parcela_limpa(p) and eh_parcela_minada(p): return 'X'
     elif eh_parcela(p): return p['state']
-    raise TypeError ### WHICH? ###
+    raise TypeError
 
 def alterna_bandeira(p):
+    """ (Alto Nível) Alterna o estado de uma parcela entre marcada e tapada """
+
     if eh_parcela_marcada(p): 
         p = desmarca_parcela(p)
         return True
@@ -242,18 +305,26 @@ def alterna_bandeira(p):
         return True
     return False
 
-#############
-### Campo ###
-#############
+###################
+### TAD - Campo ###
+###################
 
 def cria_campo(c, l):
     """
-                                                                        #
+    (Baixo Nível)
     Cria um campo de minas de acordo com a cadeia de caracteres 'c' e o 
     número de linhas 'l', correspondentes à coordenada do canto inferior
     direito do campo. O campo toma a forma de um dicionário de listas. 
     Cada lista corresponde a uma coluna, e cada Parcela (TAD) numa 
     dada lista corresponde à interceção de uma coluna com uma linha.
+
+    Ex. Meramente Illustrativo de um campo 3x3
+
+        {
+            A: [{state: '#', mine: 0}, {state: '#', mine: 0}, {state: '#', mine: 0}],
+            B: [{state: '#', mine: 0}, {state: '#', mine: 0}, {state: '#', mine: 0}],
+            C: [{state: '#', mine: 0}, {state: '#', mine: 0}, {state: '#', mine: 0}],
+        }
 
     c (str) -- Colunas pretendidas
     l (int) -- Linhas pretendidas
@@ -267,18 +338,30 @@ def cria_campo(c, l):
     return minefield
 
 def cria_copia_campo(m):
-    """ Retorna uma copia profunda do minefield (m)"""
+    """ 
+    (Baixo Nível) 
+    Retorna uma copia profunda do Campo, 
+    copiando todas as parcelas
+    
+    m (TAD) -- Campo de Minas
+    """
     copy = dict()
     if eh_campo(m):
         for col in range(65, ord(obtem_ultima_coluna(m)) + 1): copy.update({chr(col): m[chr(col)]})
         return copy
     
-def obtem_ultima_coluna(m): return list(m.keys())[-1]
+def obtem_ultima_coluna(m):
+    """ (Baixo Nível) """
+    return list(m.keys())[-1]
 
-def obtem_ultima_linha(m): return len(m['A'])
+def obtem_ultima_linha(m): 
+    """ (Baixo Nível) """
+    return len(m['A'])
 
 def obtem_parcela(m, c):
-    """ Devolve a parcela localizada na coordenada 'c'
+    """ 
+    (Baixo Nível)
+    Devolve a Parcela localizada na coordenada 'c'
     
     m (TAD) -- Campo de Minas
     c (TAD) -- Coordenadas
@@ -286,11 +369,11 @@ def obtem_parcela(m, c):
     return (m[obtem_coluna(c)])[obtem_linha(c)-1]
 
 def obtem_coordenadas(m, s):
-                                                                        #
     """ 
-    Devolve um tuplo contendo todas as parcelas correspondentes ao 
+    (Baixo Nível)
+    Devolve um tuplo contendo todas as Parcelas correspondentes ao 
     estado 's', ordenadas da esquerda para a direita e de cima a baixo
-    segundo a sua posição no campo 'm'
+    segundo a sua posição no Campo 'm'
     
     m (TAD) -- Campo de Minas
     s (str) -- Estado selecionado
@@ -310,17 +393,22 @@ def obtem_coordenadas(m, s):
 
 def obtem_numero_minas_vizinhas(m, c):
     """
-    Devolve o número de parcelas vizinhas à coordenada que escondem se
+    (Baixo Nível)
+    Devolve o número de Parcelas vizinhas à Coordenada que escondem se
     verificam minadas
-    
+
+    m (TAD) -- Campo de Minas
+    c (TAD) -- Coordenada
     """
-    if not eh_coordenada_do_campo(m, c): raise TypeError ### idk man ###
+    if not eh_coordenada_do_campo(m, c): raise TypeError
     count = 0
     for coord in obtem_coordenadas_vizinhas(c):
         if eh_coordenada_do_campo(m, coord) and eh_parcela_minada(obtem_parcela(m, coord)): count += 1
     return count
 
 def eh_campo(arg):
+    """ (Baixo Nível) Verifica se um dado argumento é um Campo de Minas (TAD) """
+
     def keys(arg):
         for k in arg.keys():
             if not isinstance(k, str) or ord('A') > ord(k) or ord('Z') < ord(k): return False
@@ -333,13 +421,37 @@ def eh_campo(arg):
     return isinstance(arg, dict) and  0 < len(arg) <= 27 and keys(arg) and values(arg)
 
 def eh_coordenada_do_campo(m, c):
+    """ (Baixo Nível) 
+    Garante que existe uma parcela correspondente à Coordenada c no Campo m
+    
+    m (TAD) -- Campo de Minas
+    c (TAD) -- Coordenada
+    """
     return eh_campo(m) and eh_coordenada(c)\
         and ord(obtem_coluna(c)) <= ord(obtem_ultima_coluna(m))\
         and obtem_linha(c) <= obtem_ultima_linha(m)
 
-def campos_iguais(m1, m2): return eh_campo(m1) and eh_campo(m2) and m1 == m2
+def campos_iguais(m1, m2):
+    """ (Baixo Nível) Verifica a igualdade de dois campos """
+    return eh_campo(m1) and eh_campo(m2) and m1 == m2
 
 def campo_para_str(m):
+    """ 
+    (Baixo Nível)
+    Cria uma representação do Campo m na forma de string.
+    Ex Ilustrativo. 
+
+           ABCDE
+          +-----+
+        01|#1   |
+        02|#1   |
+        03|#321 |
+        04|###1 |
+          +-----+
+        
+    m (TAD) -- Campo de Minas
+    c (TAD) -- Coordenada
+    """
     def mine_counter(m, c):
         count = 0
         for v in obtem_coordenadas_vizinhas(c):
@@ -372,8 +484,9 @@ def campo_para_str(m):
 def coloca_minas(m, c, g, n):
     """
     (Alto Nível)
-    Modifica o campo 'm' minando aleatoreamente 'n' parcelas unicas, 
-    evitando a coordenada c
+    Modifica o Campo 'm' minando aleatoreamente 'n' Parcelas unicas, 
+    evitando a Coordenada c e a sua vizinhança de modo a garantir uma
+    primeira jogada segura
 
     m (TAD) -- Campo de Minas
     c (TAD) -- Coordenada
@@ -392,8 +505,8 @@ def coloca_minas(m, c, g, n):
 def limpa_campo(m, c):
     """
     (Alto Nível)
-    Limpa a parcela na coordenada c e todas as vizinhas,
-    devlove o campo
+    Limpa a Parcela na Coordenada c e todas as vizinhas,
+    devlove o Campo
 
     m (TAD) -- Campo de Minas
     c (TAD) -- Coordenada
@@ -413,7 +526,7 @@ def limpa_campo(m, c):
 
 def jogo_ganho(m):
     """
-    Recebe um campo e verifica se todas as parcelas não minadas se 
+    Recebe um Campo e verifica se todas as Parcelas não minadas se 
     encontram limpas, como condição de vitória do jogo.
 
     m (TAD)       -- Campo de Minas
@@ -425,7 +538,7 @@ def jogo_ganho(m):
     return False
 
 def aux_coord_input():
-    """ Permite o input de coordenadas por parte do utilizador"""
+    """ Permite o input de Coordenadas por parte do jogador"""
     cinput = input('Escolha uma coordenada:')
     while (not isinstance(cinput, str)) or len(cinput) != 3 or\
         ord(cinput[0]) < ord('A') or ord(cinput[0]) > ord('Z') or \
@@ -437,8 +550,8 @@ def aux_coord_input():
 
 def turno_jogador(m):
     """
-    Permite ao jogador a opção de escolher uma coordenada e aplicar uma
-    ação sobre o campo nessa coordenada. Retorna False caso o jogador
+    Permite ao jogador a opção de escolher uma Coordenada e aplicar uma
+    ação sobre o Campo nessa Cordenada. Retorna False caso o jogador
     ative uma mina, e True caso contrário.
 
     m (TAD)       -- Campo de Minas
@@ -469,7 +582,7 @@ def turno_jogador(m):
 def minas(c, l, n, d, s):
     """
     Função principal do jogo das minas. Recebe todos os dados necessários
-    para gerar um campo e distribuir minas de forma pseudoaleatória
+    para gerar um Campo e distribuir minas de forma pseudoaleatória
 
     c (str)  -- Ultima coluna
     l (int)  -- Ultima linha
