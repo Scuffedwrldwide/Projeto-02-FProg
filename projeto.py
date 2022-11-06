@@ -228,7 +228,6 @@ def cria_copia_parcela(p):
     
     p (TAD) -- Parcela
     """
-    
     if eh_parcela(p): return p.copy()
 
 def limpa_parcela(p):
@@ -559,7 +558,6 @@ def turno_jogador(m):
     m (TAD)       -- Campo de Minas
     return (Bool) -- Resultado da ação
     """
-
     move = input('Escolha uma ação, [L]impar ou [M]arcar:')
     while move not in ['L', 'M']: move = input('Escolha uma ação, [L]impar ou [M]arcar:')
     
@@ -588,7 +586,6 @@ def minas(c, l, n, d, s):
     d (int)  -- Dimensão do gerador (32/64 bits)
     s (seed) -- Seed para a geração da posição de minas
     """
-    
     try:
         g = cria_gerador(d, s)
         m = cria_campo(c, l)                 # \/ Devem existir menos minas que casas no campo, contando com as 9 limpas inicialmente
