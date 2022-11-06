@@ -172,7 +172,7 @@ def obtem_coordenadas_vizinhas(c):
     """
     if not eh_coordenada(c): return
     viz = []
-    char = lambda offset: chr(ord(c[0])+offset)
+    char = lambda offset: chr(ord(obtem_coluna(c))+offset)
     line = obtem_linha(c)
     for i in [
         (char(-1), line-1), (char(0), line-1), (char(1), line-1),   # Acima da coordenada
