@@ -371,6 +371,7 @@ def campo_para_str(m):
 
 def coloca_minas(m, c, g, n):
     """
+    (Alto Nível)
     Modifica o campo 'm' minando aleatoreamente 'n' parcelas unicas, 
     evitando a coordenada c
 
@@ -383,15 +384,19 @@ def coloca_minas(m, c, g, n):
     while n > 0:
         target = cria_coordenada(gera_carater_aleatorio(g,obtem_ultima_coluna(m)), gera_numero_aleatorio(g,obtem_ultima_linha(m)))
         if target not in exclzone:
-            m[obtem_coluna(target)][obtem_linha(target)-1] = esconde_mina(obtem_parcela(m,target))
+            esconde_mina(obtem_parcela(m,target))
             exclzone.append(target)
             n -= 1
     return m
 
 def limpa_campo(m, c):
     """
+    (Alto Nível)
     Limpa a parcela na coordenada c e todas as vizinhas,
     devlove o campo
+
+    m (TAD) -- Campo de Minas
+    c (TAD) -- Coordenada
     """
     limpa_parcela(obtem_parcela(m,c))
     if eh_coordenada_do_campo(m,c) and obtem_numero_minas_vizinhas(m, c) == 0:
@@ -408,7 +413,6 @@ def limpa_campo(m, c):
 
 def jogo_ganho(m):
     """
-                                                                        #
     Recebe um campo e verifica se todas as parcelas não minadas se 
     encontram limpas, como condição de vitória do jogo.
 
@@ -421,6 +425,7 @@ def jogo_ganho(m):
     return False
 
 def aux_coord_input():
+    """ Permite o input de coordenadas por parte do utilizador"""
     cinput = input('Escolha uma coordenada:')
     while (not isinstance(cinput, str)) or len(cinput) != 3 or\
         ord(cinput[0]) < ord('A') or ord(cinput[0]) > ord('Z') or \
@@ -432,7 +437,6 @@ def aux_coord_input():
 
 def turno_jogador(m):
     """
-                                                                        #
     Permite ao jogador a opção de escolher uma coordenada e aplicar uma
     ação sobre o campo nessa coordenada. Retorna False caso o jogador
     ative uma mina, e True caso contrário.
@@ -464,7 +468,6 @@ def turno_jogador(m):
 
 def minas(c, l, n, d, s):
     """
-
     Função principal do jogo das minas. Recebe todos os dados necessários
     para gerar um campo e distribuir minas de forma pseudoaleatória
 
@@ -477,7 +480,7 @@ def minas(c, l, n, d, s):
     
     try:
         g = cria_gerador(d, s)
-        m = cria_campo(c, l)                    # \/ Devem existir menos minas que casas no campo, contando com as 9 limpas inicialmente
+        m = cria_campo(c, l)                 # \/ Devem existir menos minas que casas no campo, contando com as 9 limpas inicialmente
         if not isinstance(n, int) or n < 1 or n > (ord(c) - 64)*l - 9: raise ValueError 
     except: raise ValueError('minas: argumentos invalidos')
     
