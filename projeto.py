@@ -54,7 +54,7 @@ def atualiza_estado(g):
 def eh_gerador(g):
     """ (Baixo Nível) Verifica se um argumento é um Gerador (TAD) """
     if not isinstance(g, list) or len(g) != 2 or not isinstance(g[0], int) or not isinstance(g[1], int): return False
-    if g[0] in [32, 64] and g[1] <= (2 ** g[0]): return True # 2 ** g[0] representa o Integer Limit para o tamanho escolhido
+    if g[0] in [32, 64] and 0 < g[1] <= (2 ** g[0]): return True # 2 ** g[0] representa o Integer Limit para o tamanho escolhido
     return False
 
 def geradores_iguais(g1, g2):
@@ -162,7 +162,6 @@ def str_para_coordenada(s):
     else: raise ValueError
 
 def obtem_coordenadas_vizinhas(c):
-                                                                        #
     """
     (Alto Nível)
     Dada uma Coordenada, devolve um tuplo contendo as Coordenadas vizinhas, 
