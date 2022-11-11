@@ -144,7 +144,7 @@ def coordenada_para_str(c):
     (Baixo nível) 
     Devolve uma representação da Coordenada
 
-    c (str) -- Coordenada
+    c (TAD) -- Coordenada
     """
     if not eh_coordenada: raise TypeError 
     num = lambda x: '0'+str(x) if x < 10 else str(x)    # Garante a representação do número por dois dígitos
@@ -422,7 +422,8 @@ def eh_campo(arg):
     return isinstance(arg, dict) and  0 < len(arg) <= 27 and keys(arg) and values(arg)
 
 def eh_coordenada_do_campo(m, c):
-    """ (Baixo Nível) 
+    """ 
+    (Baixo Nível) 
     Garante que existe uma parcela correspondente à Coordenada c no Campo m
     
     m (TAD) -- Campo de Minas
